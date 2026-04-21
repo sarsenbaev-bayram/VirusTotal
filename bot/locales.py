@@ -16,8 +16,7 @@ MESSAGES = {
             "🔍 /scan_hash — Fayl hashini skanerlash (MD5/SHA1/SHA256)\n"
             "🌍 /language — Tilni o'zgartirish\n\n"
             "━━━━━━━━━━━━━━━━━━━━━\n"
-            "⚡ Cheklov: <b>daqiqasiga 5 ta skanerlash</b>\n"
-            "🌐 Veb-ilovamiz: <b>http://localhost:8000</b>"
+            "⚡ Cheklov: <b>daqiqasiga 5 ta skanerlash</b>"
         ),
         "select_language": "Iltimos, tilni tanlang:",
         "language_changed": "Til muvaffaqiyatli o'zgartirildi! ✅",
@@ -51,8 +50,7 @@ MESSAGES = {
             "🔍 /scan_hash — Scan a file hash (MD5/SHA1/SHA256)\n"
             "🌍 /language — Change language\n\n"
             "━━━━━━━━━━━━━━━━━━━━━\n"
-            "⚡ Limit: <b>5 scans per minute</b>\n"
-            "🌐 Web App: <b>http://localhost:8000</b>"
+            "⚡ Limit: <b>5 scans per minute</b>"
         ),
         "select_language": "Please select a language:",
         "language_changed": "Language successfully changed! ✅",

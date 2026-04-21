@@ -91,3 +91,19 @@ async def get_scan_by_id(
     stmt = select(ScanResult).where(ScanResult.id == scan_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def get_stats(db: AsyncSession) -> dict:
+    """Fetch aggregate statistics for the admin panel."""
+    from sqlalchemy import func
+    user_count = await db.scalar(select(func.count(User.id)))
+    scan_count = await db.scalar(select(func.count(ScanResult.id)))
+    malicious_count = await db.scalar(
+        select(func.count(ScanResult.id)).where(ScanResult.malicious_count > 0)
+    )
+
+    return {
+        "users": user_count or 0,
+        "scans": scan_count or 0,
+        "malicious": malicious_count or 0
+    }

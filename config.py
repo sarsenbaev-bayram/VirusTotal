@@ -31,6 +31,10 @@ class Settings:
     VIRUSTOTAL_API_KEY: str = _require("VIRUSTOTAL_API_KEY")
     GEMINI_API_KEY: str = _require("GEMINI_API_KEY")
 
+    # ── Admin Config ──────────────────────────────────────────
+    # Your Telegram ID to restrict admin command access
+    ADMIN_ID: int = int(os.getenv("ADMIN_ID", "7805185795"))
+
     # ── Web Server ────────────────────────────────────────────
     WEB_HOST: str = os.getenv("WEB_HOST", "0.0.0.0")
     # PORT is set by Heroku. We MUST prioritize it over .env settings.

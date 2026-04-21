@@ -10,7 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from config import settings
 from bot.middlewares.rate_limiter import RateLimitMiddleware
 from bot.middlewares.i18n import I18nMiddleware
-from bot.handlers import start, scan_url, scan_hash, language
+from bot.handlers import start, scan_url, scan_hash, language, admin
 from loguru import logger
 
 
@@ -32,6 +32,7 @@ def create_dispatcher() -> Dispatcher:
     dp.callback_query.middleware(I18nMiddleware())
 
     # ── Register command routers ──────────────────────────────
+    dp.include_router(admin.router)
     dp.include_router(start.router)
     dp.include_router(scan_url.router)
     dp.include_router(scan_hash.router)
