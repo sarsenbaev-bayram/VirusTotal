@@ -63,7 +63,10 @@ async def scan_url(url: str) -> dict:
             submit_resp.raise_for_status()
             analysis_id = submit_resp.json()["data"]["id"]
 
-            # Step 2 — Fetch analysis report
+            # Step 2 — Wait a bit for analysis to progress (Heroku-friendly delay)
+            await asyncio.sleep(5)
+
+            # Step 3 — Fetch analysis report
             report_resp = await client.get(
                 f"{settings.VT_BASE_URL}/analyses/{analysis_id}",
                 headers=_vt_headers(),
@@ -72,6 +75,18 @@ async def scan_url(url: str) -> dict:
             data = report_resp.json()
 
             stats = data["data"]["attributes"].get("stats", {})
+            status = data["data"]["attributes"].get("status")
+            
+            # If still queued, wait another 5 seconds
+            if status != "completed":
+                await asyncio.sleep(5)
+                report_resp = await client.get(
+                    f"{settings.VT_BASE_URL}/analyses/{analysis_id}",
+                    headers=_vt_headers(),
+                )
+                data = report_resp.json()
+                stats = data["data"]["attributes"].get("stats", {})
+
             malicious = stats.get("malicious", 0)
             suspicious = stats.get("suspicious", 0)
             # Count both malicious + suspicious as "bad"
