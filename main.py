@@ -23,21 +23,7 @@ def setup_logging():
     logger.add("logs/app.log", level="DEBUG", rotation="10 MB", retention="7 days", compression="zip")
     logger.info("Logging configured.")
 
-async def main():
-    setup_logging()
-    logger.info("=" * 60)
-    logger.info("  OWASP Secure Scanner — Starting up")
-    logger.info("=" * 60)
-
-    # 1. Initialize DB first
-    from database.database import init_db
-    await init_db()
-
-    # 2. Get Bot instance
-    from bot.bot import dp, bot
-    
-    # 3. Setup web server config
-    # Use global settings.WEB_PORT which now respects Heroku's $PORT
+async def run_web():
     config = uvicorn.Config(
         app="web.app:app",
         host="0.0.0.0",
@@ -46,17 +32,29 @@ async def main():
         loop="asyncio"
     )
     server = uvicorn.Server(config)
-
     logger.info(f"[WEB] Starting on port {settings.WEB_PORT}")
-    logger.info(f"[BOT] Starting polling...")
+    await server.serve()
 
-    # 4. Run both concurrently
-    # We use create_task to ensure web starts binding ASAP
-    web_task = asyncio.create_task(server.serve())
-    bot_task = asyncio.create_task(dp.start_polling(bot))
+async def run_bot():
+    from bot.bot import start_bot
+    await start_bot()
 
-    # Keep running until one of them fails
-    await asyncio.gather(web_task, bot_task)
+async def main():
+    setup_logging()
+    logger.info("=" * 60)
+    logger.info("  OWASP Secure Scanner — Starting up")
+    logger.info("=" * 60)
+
+    # Initialize DB first
+    from database.database import init_db
+    await init_db()
+
+    # Run web + bot as concurrent async tasks
+    # We use gather to run them in the same event loop
+    await asyncio.gather(
+        run_web(),
+        run_bot(),
+    )
 
 if __name__ == "__main__":
     try:
