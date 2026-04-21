@@ -33,8 +33,8 @@ class Settings:
 
     # ── Web Server ────────────────────────────────────────────
     WEB_HOST: str = os.getenv("WEB_HOST", "0.0.0.0")
-    # Cloud providers like Heroku/Digital Ocean set 'PORT' env var
-    WEB_PORT: int = int(os.getenv("WEB_PORT") or os.getenv("PORT") or "8000")
+    # PORT is set by Heroku. We MUST prioritize it over .env settings.
+    WEB_PORT: int = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "8000")
 
     # ── Rate Limiting ─────────────────────────────────────────
     # Maximum scan requests per minute per user / IP
