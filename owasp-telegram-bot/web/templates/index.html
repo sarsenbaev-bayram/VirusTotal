@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}OWASP Security Scanner — Scan URLs & File Hashes{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Hero ──────────────────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 3.5rem 1rem 2rem;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent-glow);
+    border: 1px solid var(--border-glow);
+    border-radius: 999px;
+    padding: 5px 16px;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #e2e8f0, #93c5fd, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+  }
+
+  .hero p {
+    color: var(--text-dim);
+    font-size: 1.05rem;
+    max-width: 540px;
+    margin: 0 auto 2.5rem;
+  }
+
+  /* ── OWASP pills ─────────────────────────────────────────── */
+  .owasp-pills {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-bottom: 3rem;
+  }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.78rem; color: var(--text-muted);
+    transition: all var(--transition);
+  }
+
+  .pill:hover {
+    border-color: var(--accent);
+    color: var(--text-dim);
+    transform: translateY(-1px);
+  }
+
+  /* ── Scan tabs ───────────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    background: none; border: none;
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem; font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all var(--transition);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Feature cards ───────────────────────────────────────── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all var(--transition);
+  }
+
+  .feature-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+
+  .feature-icon { font-size: 1.75rem; margin-bottom: 0.75rem; }
+  .feature-title { font-weight: 700; margin-bottom: 0.4rem; font-size: 0.95rem; }
+  .feature-desc { color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; }
+
+  /* ── Submit spinner ──────────────────────────────────────── */
+  .spinner {
+    display: none;
+    width: 18px; height: 18px;
+    border: 2px solid #ffffff44;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">🔐 OWASP Top 10 Security</div>
+    <h1>Xavfsiz tahdidlar skaneri</h1>
+    <p>URL va fayl hashlarini zararli dasturlar, fishing va xavfsizlik tahdidlari uchun skanerlang. <strong>VirusTotal</strong> tomonidan tekshiriladi va <strong>Google Gemini</strong> orqali tahlil qilinadi.</p>
+
+    <!-- OWASP principles pills -->
+    <div class="owasp-pills">
+      <span class="pill">✅ Ma'lumotlarni tekshirish</span>
+      <span class="pill">🛡️ In'yektsiyadan himoya</span>
+      <span class="pill">🔑 Xavfsiz API kalitlari</span>
+      <span class="pill">⏱️ Surovlar chegarasi</span>
+      <span class="pill">📝 Audit jurnallari</span>
+      <span class="pill">🚫 XSS oldini olish</span>
+    </div>
+  </div>
+
+  <!-- Scan card -->
+  <div class="card">
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true"
+              id="tab-url" aria-controls="panel-url" onclick="switchTab('url')">
+        🌐 URL skanerlash
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+              id="tab-hash" aria-controls="panel-hash" onclick="switchTab('hash')">
+        🔍 Fayl hashini skanerlash
+      </button>
+    </div>
+
+    <!-- URL panel -->
+    <div id="panel-url" class="tab-panel active" role="tabpanel" aria-labelledby="tab-url">
+      <form method="POST" action="/scan/url" id="form-url" onsubmit="startScan('url')">
+        <div class="form-group">
+          <label class="form-label" for="url-input">🌐 Skanerlash uchun URL</label>
+          <input
+            id="url-input"
+            class="form-input"
+            type="url"
+            name="url"
+            placeholder="https://example.com"
+            required
+            maxlength="2048"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <button class="btn btn-primary" type="submit" id="btn-url">
+          <span class="spinner" id="spin-url"></span>
+          <span id="btn-url-text">🔍 URLni skanerlash</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Hash panel -->
+    <div id="panel-hash" class="tab-panel" role="tabpanel" aria-labelledby="tab-hash">
+      <form method="POST" action="/scan/hash" id="form-hash" onsubmit="startScan('hash')">
+        <div class="form-group">
+          <label class="form-label" for="hash-input">🔑 File Hash (MD5 / SHA-1 / SHA-256)</label>
+          <input
+            id="hash-input"
+            class="form-input"
+            type="text"
+            name="file_hash"
+            placeholder="e3b0c44298fc1c149afbf4c8996fb924..."
+            required
+            maxlength="64"
+            autocomplete="off"
+            spellcheck="false"
+            pattern="[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64}"
+            title="MD5 (32), SHA-1 (40), yoki SHA-256 (64) hex hashi bo'lishi kerak"
+          />
+          <small style="color:var(--text-muted);font-size:0.78rem;margin-top:5px;display:block;">
+            Qabul qilinadi: MD5 (32 ta belgi) · SHA-1 (40 ta belgi) · SHA-256 (64 ta belgi)
+          </small>
+        </div>
+        <button class="btn btn-primary" type="submit" id="btn-hash">
+          <span class="spinner" id="spin-hash"></span>
+          <span id="btn-hash-text">🔍 Hashni skanerlash</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Feature highlights -->
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🦠</div>
+      <div class="feature-title">VirusTotal dvigateli</div>
+      <div class="feature-desc">Tahdidlarni har tomonlama aniqlash uchun bir vaqtning o'zida 70 dan ortiq antivirus dvigatellari orqali tekshiriladi.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">AI tahlili</div>
+      <div class="feature-desc">Google Gemini natijalarni oddiy tilda tushuntiradi va amaliy xavfsizlik boyicha maslahatlar beradi.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Xavfni baholash</div>
+      <div class="feature-desc">Aniq Past / O'rta / Yuqori xavf darajalari sizga qanday chora ko'rish kerakligini bildiradi.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title">Skanerlash tarixi</div>
+      <div class="feature-desc">Barcha skanerlashlar saqlanadi va ularni <a href="/history" style="color:var(--accent)">tarix sahifasidan</a> ko'rish mumkin.</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function switchTab(type) {
+    ['url','hash'].forEach(t => {
+      document.getElementById('tab-'+t).classList.toggle('active', t === type);
+      document.getElementById('panel-'+t).classList.toggle('active', t === type);
+    });
+  }
+
+  function startScan(type) {
+    const btn  = document.getElementById('btn-'+type);
+    const spin = document.getElementById('spin-'+type);
+    const text = document.getElementById('btn-'+type+'-text');
+    btn.disabled = true;
+    spin.style.display = 'block';
+    text.textContent = 'Scanning…';
+  }
+</script>
+{% endblock %}

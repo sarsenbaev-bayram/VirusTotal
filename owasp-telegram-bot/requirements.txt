@@ -1,0 +1,39 @@
+# ============================================================
+# OWASP Secure Bot + Web App — Dependencies
+# ============================================================
+
+# Telegram Bot Framework
+aiogram
+
+# Web Framework
+fastapi
+uvicorn
+jinja2
+python-multipart
+
+# HTTP Client (async)
+httpx
+
+# Environment Variables
+python-dotenv
+
+# Database (async SQLAlchemy + SQLite)
+sqlalchemy
+aiosqlite
+
+# Input Validation
+pydantic
+email-validator
+
+# Rate Limiting
+slowapi
+
+# Google GenAI SDK
+google-generativeai
+
+# Security & Sanitization
+bleach
+validators
+
+# Logging
+loguru

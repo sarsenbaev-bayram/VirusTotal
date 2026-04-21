@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Scan History — OWASP Security Scanner{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem; font-weight: 800;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .count-badge {
+    background: var(--accent-glow);
+    border: 1px solid var(--border-glow);
+    color: var(--accent);
+    padding: 3px 12px; border-radius: 999px;
+    font-size: 0.8rem; font-weight: 700;
+  }
+
+  /* ── Table ───────────────────────────────────────────────── */
+  .history-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.87rem;
+  }
+
+  .history-table thead {
+    position: sticky; top: 64px;
+    background: var(--bg-card);
+  }
+
+  .history-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .history-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--text-dim);
+  }
+
+  .history-table tbody tr {
+    transition: background var(--transition);
+  }
+
+  .history-table tbody tr:hover td {
+    background: var(--bg-card2);
+    color: var(--text);
+  }
+
+  .history-table tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Type badge ──────────────────────────────────────────── */
+  .type-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  .type-url  { background: #2563eb18; color: #60a5fa; border: 1px solid #2563eb33; }
+  .type-hash { background: #7c3aed18; color: #c084fc; border: 1px solid #7c3aed33; }
+
+  /* ── Source badge ────────────────────────────────────────── */
+  .source-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.72rem; font-weight: 600;
+    background: var(--bg-card2); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Target cell ─────────────────────────────────────────── */
+  .target-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    max-width: 280px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── Empty state ─────────────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 4rem 2rem;
+    color: var(--text-muted);
+  }
+
+  .empty-state .icon { font-size: 3.5rem; margin-bottom: 1rem; }
+  .empty-state h2 { font-size: 1.2rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+
+  /* ── Stats summary bar ───────────────────────────────────── */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-item {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+  }
+
+  .summary-item .s-label {
+    font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px;
+  }
+
+  .summary-item .s-val {
+    font-size: 1.4rem; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Filter bar ──────────────────────────────────────────── */
+  .filter-bar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .filter-btn {
+    padding: 5px 14px; border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-muted);
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: all var(--transition);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1>
+      📋 Skanerlash tarixi
+      <span class="count-badge">{{ total }} ta yozuv</span>
+    </h1>
+    <a href="/" class="btn btn-primary">🔍 Yangi skanerlash</a>
+  </div>
+
+  {% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  {% if not scans %}
+  <!-- Empty state -->
+  <div class="card">
+    <div class="empty-state">
+      <div class="icon">📭</div>
+      <h2>Hali skanerlashlar mavjud emas</h2>
+      <p>URL yoki fayl hashini skanerlaganingizdan so'ng sirkaringiz shu yerda paydo bo'ladi.</p>
+      <a href="/" class="btn btn-primary" style="margin-top:1.5rem;">Skanerlashni boshlash</a>
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- Summary stats -->
+  {% set high_count   = scans | selectattr('risk_level', 'equalto', 'High')    | list | length %}
+  {% set medium_count = scans | selectattr('risk_level', 'equalto', 'Medium')  | list | length %}
+  {% set low_count    = scans | selectattr('risk_level', 'equalto', 'Low')     | list | length %}
+  {% set url_count    = scans | selectattr('scan_type',  'equalto', 'url')     | list | length %}
+
+  <div class="summary-bar">
+    <div class="summary-item">
+      <div class="s-label">📊 Jami skanerlashlar</div>
+      <div class="s-val">{{ total }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="s-label">🔴 Yuqori xavf</div>
+      <div class="s-val" style="color:var(--red)">{{ high_count }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="s-label">🟡 O'rta xavf</div>
+      <div class="s-val" style="color:var(--yellow)">{{ medium_count }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="s-label">🟢 Past xavf</div>
+      <div class="s-val" style="color:var(--green)">{{ low_count }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="s-label">🌐 URL skanerlashlar</div>
+      <div class="s-val">{{ url_count }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="s-label">🔍 Hash skanerlashlar</div>
+      <div class="s-val">{{ total - url_count }}</div>
+    </div>
+  </div>
+
+  <!-- Filter buttons -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterRows('all', this)">Hammasi</button>
+    <button class="filter-btn" onclick="filterRows('high', this)">🔴 Yuqori</button>
+    <button class="filter-btn" onclick="filterRows('medium', this)">🟡 O'rta</button>
+    <button class="filter-btn" onclick="filterRows('low', this)">🟢 Past</button>
+    <button class="filter-btn" onclick="filterRows('url', this)">🌐 URL</button>
+    <button class="filter-btn" onclick="filterRows('hash', this)">🔍 Hash</button>
+  </div>
+
+  <!-- History table -->
+  <div class="card" style="padding:0; overflow:hidden; overflow-x:auto;">
+    <table class="history-table" id="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Turi</th>
+          <th>Nishon</th>
+          <th>Xavf</th>
+          <th>Aniqlanganlar</th>
+          <th>Manba</th>
+          <th>Sana</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scan in scans %}
+        <tr data-risk="{{ scan.risk_level | lower }}"
+            data-type="{{ scan.scan_type | lower }}">
+          <td style="color:var(--text-muted); font-variant-numeric:tabular-nums;">{{ scan.id }}</td>
+          <td>
+            <span class="type-badge type-{{ scan.scan_type | lower }}">
+              {% if scan.scan_type | lower == 'url' %}🌐{% else %}🔍{% endif %}
+              {{ scan.scan_type | upper }}
+            </span>
+          </td>
+          <td>
+            <div class="target-cell" title="{{ scan.target }}">{{ scan.target }}</div>
+          </td>
+          <td>
+            {% if scan.risk_level == 'High' %}
+              <span class="badge badge-high">🔴 High</span>
+            {% elif scan.risk_level == 'Medium' %}
+              <span class="badge badge-medium">🟡 Medium</span>
+            {% elif scan.risk_level == 'Low' %}
+              <span class="badge badge-low">🟢 Low</span>
+            {% else %}
+              <span class="badge badge-unknown">⚪ Unknown</span>
+            {% endif %}
+          </td>
+          <td style="font-variant-numeric:tabular-nums;">
+            <span {% if scan.malicious_count > 3 %}style="color:var(--red)"
+                  {% elif scan.malicious_count > 0 %}style="color:var(--yellow)"
+                  {% else %}style="color:var(--green)"{% endif %}>
+              {{ scan.malicious_count }}
+            </span>
+            <span style="color:var(--text-muted)"> / {{ scan.total_engines }}</span>
+          </td>
+          <td>
+            <span class="source-badge">
+              {% if scan.source == 'bot' %}🤖{% else %}🌐{% endif %}
+              {{ scan.source }}
+            </span>
+          </td>
+          <td style="white-space:nowrap; color:var(--text-muted); font-size:0.8rem;">
+            {{ scan.created_at.strftime('%Y-%m-%d %H:%M') }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function filterRows(filter, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('#history-table tbody tr').forEach(row => {
+      if (filter === 'all') {
+        row.style.display = '';
+      } else if (['url','hash'].includes(filter)) {
+        row.style.display = row.dataset.type === filter ? '' : 'none';
+      } else {
+        row.style.display = row.dataset.risk === filter ? '' : 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}
