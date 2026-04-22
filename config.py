@@ -39,6 +39,7 @@ class Settings:
     WEB_HOST: str = os.getenv("WEB_HOST", "0.0.0.0")
     # PORT is set by Heroku. We MUST prioritize it over .env settings.
     WEB_PORT: int = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "8000")
+    BASE_URL: str = os.getenv("BASE_URL", f"http://localhost:{WEB_PORT}")
 
     # ── Rate Limiting ─────────────────────────────────────────
     # Maximum scan requests per minute per user / IP

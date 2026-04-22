@@ -10,7 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from config import settings
 from bot.middlewares.rate_limiter import RateLimitMiddleware
 from bot.middlewares.i18n import I18nMiddleware
-from bot.handlers import start, scan_url, scan_hash, language, admin
+from bot.handlers import start, scan_url, scan_hash, language, admin, menu
 from loguru import logger
 
 
@@ -37,6 +37,7 @@ def create_dispatcher() -> Dispatcher:
     dp.include_router(scan_url.router)
     dp.include_router(scan_hash.router)
     dp.include_router(language.router)
+    dp.include_router(menu.router)
 
     logger.info("[BOT] Dispatcher configured with rate limiter and all handlers.")
     return dp

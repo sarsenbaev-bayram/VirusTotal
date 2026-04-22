@@ -37,6 +37,10 @@ MESSAGES = {
             "⚠️ Xavf darajasi: <b>{risk_level}</b>\n\n"
             "🤖 <b>AI Tahlili:</b>\n{ai_explanation}"
         ),
+        "btn_url": "🌐 URL skanerlash",
+        "btn_hash": "🔍 Hash skanerlash",
+        "btn_history": "📋 Tarix",
+        "btn_lang": "🌍 Tilni o'zgartirish",
     },
     "en": {
         "welcome": (
@@ -71,5 +75,9 @@ MESSAGES = {
             "⚠️ Risk Level: <b>{risk_level}</b>\n\n"
             "🤖 <b>AI Analysis:</b>\n{ai_explanation}"
         ),
+        "btn_url": "🌐 Scan URL",
+        "btn_hash": "🔍 Scan Hash",
+        "btn_history": "📋 History",
+        "btn_lang": "🌍 Change Language",
     }
 }
